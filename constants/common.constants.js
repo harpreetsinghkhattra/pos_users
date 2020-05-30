@@ -19,9 +19,11 @@ module.exports = {
     LOGGED_OUT: "logged_out",
     INTERNAL_SERVER_ERROR: "internal_server_error",
 
-    USER_TYPE_COOK: "cook",
-    USER_TYPE_GUEST: "guest",
-    USER_TYPE_ADMIN: "admin",
+    USER_TYPE_SUPER_ADMIN: "super_admin",
+    USER_TYPE_MARKETING: "marketing",
+    USER_TYPE_CONTENT_WRITER: "content_writer",
+    USER_TYPE_SELLER: "seller",
+    USER_TYPE_USER: "user",
 
     LOGIN_TYPE_CUSTOM_USER: "custom_user",
     LOGIN_TYPE_FACEBOOK: "facebook",
@@ -35,5 +37,8 @@ module.exports = {
     DEACTIVE: 'deactive',
 
     REQUEST_DATA: 'request_data',
-    AUTH_DATA: 'auth_data'
+    AUTH_DATA: 'auth_data',
+
+    ACCOUNT_VERIFIED: "verified",
+    ACCOUNT_NOT_VERIFIED: "not_verified"
 }

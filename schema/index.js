@@ -1,3 +1,11 @@
+var { ObjectId } = require("mongodb");
+
+const checkMongodbObjectId = (value, helper, message) => {
+    if(ObjectId.isValid(value)) return value;
+
+    return helper.message(message)
+}
+
 const handleErrors = (res) => {
     const details = res && res.details ? res.details : [];
     return new Promise((resolve, reject) => {
@@ -15,5 +23,6 @@ const validate = (schema, data) => {
 }
 
 module.exports = {
-    validate
+    validate,
+    checkMongodbObjectId
 }

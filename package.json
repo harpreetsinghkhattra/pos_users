@@ -17,6 +17,7 @@
     "md5": "^2.2.1",
     "moment-timezone": "^0.5.28",
     "mongodb": "^3.5.5",
+    "mongoose": "^5.9.14",
     "morgan": "~1.9.1",
     "sanitize-html": "^1.22.1",
     "uuid": "^7.0.2"
