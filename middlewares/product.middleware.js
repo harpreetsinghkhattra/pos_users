@@ -5,7 +5,9 @@ var {
 
     get_product_category_schema,
     get_product_sub_category_schema,
-    get_product_size_schema
+    get_product_size_schema,
+
+    create_product_form
 } = require("../schema/product.schema");
 var { validate } = require('../schema');
 const { httpResponse } = require("../controller/response.controller");
@@ -318,6 +320,46 @@ const get_product_size_middleware = async (req, res, next) => {
     }
 }
 
+/** create product form validate schema */
+const validate_create_product_form_middleware = async (req, res, next) => {
+    try {
+        const data = await validate(create_product_form, req.body);
+        req.body = data;
+        next();
+    } catch (error) {
+        next(httpResponse(req, res, VALIDATION_ERROR, error))
+    }
+}
+
+/** Create document */
+const create_product_form_middleware = async (req, res, next) => {
+    try {
+        console.log(req.body)
+        // const { size_id } = req.params;
+
+        // const { status, response } = await get_product_size_controller({
+        //     _id: size_id
+        // });
+
+        // if (status === SUCCESS) {
+        //     httpResponse(req, res, SUCCESS, {
+        //         ...response
+        //     });
+        // } else next(httpResponse(req, res, status, response));
+    } catch (error) {
+        console.log("error ===> ", error);
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
 module.exports = {
     validate_create_product_category_middleware,
     sort_create_product_category_input_data_middleware,
@@ -338,5 +380,8 @@ module.exports = {
     get_product_sub_category_middleware,
 
     validate_get_product_size_middleware,
-    get_product_size_middleware
+    get_product_size_middleware,
+
+    validate_create_product_form_middleware,
+    create_product_form_middleware
 }
