@@ -21,7 +21,7 @@ const validate_header = (req, res, next) => {
     }));
 }
 
-const validate_credentials = async (req, res, next) => {
+const validate_credentials = async (req, res, next, user_types) => {
     try {
         const id = req.headers.id;
         const access_token = req.headers.access_token;
@@ -32,7 +32,7 @@ const validate_credentials = async (req, res, next) => {
             }));
             return;
         }
-
+        
         const sso_user_detail = await get_sso_user_token({ uid: id, access_token });
         const { status, response } = await get_user_information({ _id: id });
 
@@ -47,6 +47,15 @@ const validate_credentials = async (req, res, next) => {
         }
 
         const { user_type, account } = response;
+
+        const check__user_type_index = user_types.indexOf(user_type);
+
+        if (check__user_type_index === -1) {
+            next(httpResponse(req, res, FORBIDDEN, {
+                message: "User not has access for this API."
+            }));
+            return;
+        }
 
         req[AUTH_DATA] = {
             user_type,
@@ -69,7 +78,7 @@ const validate_credentials = async (req, res, next) => {
     }
 }
 
-const validate_refresh_token_credentials = async (req, res, next) => {
+const validate_refresh_token_credentials = async (req, res, next, user_types) => {
     try {
         const id = req.headers.id;
         const refresh_token = req.headers.refresh_token;
@@ -85,6 +94,14 @@ const validate_refresh_token_credentials = async (req, res, next) => {
         const { status, response } = await get_user_information({ _id: id });
 
         const { user_type, account } = response;
+
+        const check__user_type_index = user_types.indexOf(user_type);
+        if (check__user_type_index === -1) {
+            next(httpResponse(req, res, FORBIDDEN, {
+                message: "User do not has access for this API."
+            }));
+            return;
+        }
 
         req[AUTH_DATA] = {
             user_type,

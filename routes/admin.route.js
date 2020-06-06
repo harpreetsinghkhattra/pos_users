@@ -41,8 +41,10 @@ var {
 } = require('../middlewares/sails.middleware');
 
 var {
-    admin_validate_credentials
+    validate_credentials
 } = require('../middlewares/auth.middleware');
+
+var { USER_TYPE_USER, USER_TYPE_CONTENT_WRITER, USER_TYPE_SELLER, USER_TYPE_SUPER_ADMIN, USER_TYPE_MARKETING } = require('../constants/common.constants');
 
 /** Create admin user */
 router.post("/signup",
@@ -50,15 +52,9 @@ router.post("/signup",
     admin_signup_sort_input_data_middleware,
     admin_signup_insert_document_middleware);
 
-/** Login admin user */
-router.post("/login",
-    admin_login_validation_middleware,
-    login_sort_input_data,
-    admin_login_check_credentials_middleware);
-
 /** Get admin user detail */
 router.get("/",
-    admin_validate_credentials,
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN]),
     get_admin_user_detail_middleware);
 
 /** Forgot password */
@@ -75,14 +71,14 @@ router.post("/forgot_password/reset_password",
 
 /** Change password */
 router.post("/change_password",
-    admin_validate_credentials,
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN]),
     admin_change_password_validation_middleware,
     admin_sort_change_password_input_data_middleware,
     admin_change_password_middleware);
 
 /** Content Writer user registeration */
 router.post("/register/content_writer",
-    admin_validate_credentials,
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN]),
     content_writer_signup_validation_middleware,
     content_writer_signup_sort_input_data_middleware,
     content_writer_signup_insert_document_middleware
@@ -90,7 +86,7 @@ router.post("/register/content_writer",
 
 /** Sails user registeration */
 router.post("/register/sails",
-    admin_validate_credentials,
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN]),
     sails_user_signup_validation_middleware,
     sails_user_signup_sort_input_data_middleware,
     sails_user_signup_insert_document_middleware

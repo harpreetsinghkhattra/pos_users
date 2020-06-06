@@ -44,8 +44,8 @@ const sort_insert_user_input_data = async (data) => {
 
             var { first_name, last_name, email, password, token = null, device_type, device_signature } = data;
             var dates = {
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+                created_at: new Date(),
+                updated_at: new Date()
             }
 
             Promise.all([
@@ -131,8 +131,8 @@ const find_device_token = async (query = null) => {
 const insert_device_token = async (query, data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const res = await device_tokens_collection.findOneAndUpdate(query, data, { runValidators: true, upsert: true });
-            resolve({ status: SUCCESS, response: res && res.toJSON() || data });
+            await device_tokens_collection.updateOne(query, data, { runValidators: true, upsert: true });
+            resolve({ status: SUCCESS, response: data });
         } catch (error) {
             reject({ status: ERROR, response: error });
         }
@@ -300,8 +300,8 @@ const sort_login_user_input_data = async (data) => {
             const { salt } = user_data && user_data.response || {};
 
             var dates = {
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
+                created_at: new Date(),
+                updated_at: new Date()
             }
 
             const request_input_data = await Promise.all([
@@ -354,7 +354,7 @@ const sort_update_user_forgot_password_input_data_controller = async (data) => {
 
             var { email } = data;
             var dates = {
-                updated_at: new Date().toISOString()
+                updated_at: new Date()
             }
 
             resolve({
@@ -464,7 +464,7 @@ const sort_session_login_user_input_data_controller = async (data) => {
             const { salt } = user_data && user_data.response || {};
 
             var dates = {
-                updated_at: new Date().toISOString()
+                updated_at: new Date()
             }
 
             const request_input_data = await Promise.all([
@@ -515,7 +515,7 @@ const sort_refresh_token_input_data_controller = async (data) => {
             const { salt } = user_data && user_data.response || {};
 
             var dates = {
-                updated_at: new Date().toISOString()
+                updated_at: new Date()
             }
 
             const request_input_data = await Promise.all([
@@ -585,7 +585,7 @@ const sort_logout_input_data_controller = async (data) => {
             const { salt } = user_data && user_data.response || {};
 
             var dates = {
-                updated_at: new Date().toISOString()
+                updated_at: new Date()
             }
 
             resolve({

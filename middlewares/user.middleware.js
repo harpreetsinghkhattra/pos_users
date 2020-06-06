@@ -1,4 +1,12 @@
-var { registeration, login, session_login, refresh_token, logout } = require("../schema/user.schema");
+var {
+    registeration,
+    login,
+    session_login,
+    refresh_token,
+    logout,
+    user_forgot_password_reset_password_schema,
+    user_forgot_password_schema
+} = require("../schema/user.schema");
 var { validate } = require('../schema');
 const { httpResponse } = require("../controller/response.controller");
 const {
@@ -19,7 +27,13 @@ const {
 
     sort_logout_input_data_controller,
 
-    update_device_token_controller
+    update_device_token_controller,
+
+    update_user_information_controller,
+
+    sort_update_user_forgot_password_input_data_controller,
+
+    sort_update_user_forgot_password_reset_password_input_data_controller
 } = require("../controller/user.controller");
 const {
     get_admin_user_detail_controller
@@ -79,12 +93,16 @@ const signup_insert_document = async (req, res, next) => {
             request_data_user_detail.uid = response._id;
             request_data_device_token.uid = response._id;
             request_data_sso_token.uid = response._id;
+            const query = {
+                uid: response._id,
+                device_signature: request_data_sso_token.device_signature
+            }
 
             //Save user detail response
             const save_user_detail_response = await Promise.all([
                 insert_user_detail(request_data_user_detail),
-                insert_sso_token(request_data_sso_token),
-                insert_device_token(request_data_device_token)
+                insert_sso_token(query, request_data_sso_token),
+                insert_device_token(query, request_data_device_token)
             ]);
 
             const [user_detail_response, data_sso_token_response] = save_user_detail_response;
@@ -434,6 +452,135 @@ const logout_check_credentials_middleware = async (req, res, next) => {
     }
 }
 
+/** User forgot password validation */
+const user_forgot_password_validation_middleware = async (req, res, next) => {
+    try {
+        const data = await validate(user_forgot_password_schema, req.body);
+        req.body = data;
+        next();
+    } catch (error) {
+        next(httpResponse(req, res, VALIDATION_ERROR, error))
+    }
+}
+
+/** User forogot password sort input data */
+const user_sort_forgot_password_input_data_middleware = async (req, res, next) => {
+    try {
+        const data = await sort_update_user_forgot_password_input_data_controller(req.body);
+        req[REQUEST_DATA] = data;
+        next();
+    } catch (error) {
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
+/** User forogt password */
+const user_forgot_password_middleware = async (req, res, next) => {
+    try {
+        const { email, ...rest } = req[REQUEST_DATA];
+
+        const data = await get_user_information({ email });
+        const { status, response } = data;
+
+        if (status === SUCCESS) {
+
+            //Save user inforation response
+            const { status, response } = await update_user_information_controller(
+                { email },
+                { $set: { ...rest } }
+            );
+
+            console.log("status ===> ", status);
+
+            httpResponse(req, res, status, response);
+
+        } else next(httpResponse(req, res, status, response));
+    } catch (error) {
+        console.log("error ===> ", error);
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
+
+/** User forgot password reset password validation */
+const user_forgot_password_reset_password_validation_middleware = async (req, res, next) => {
+    try {
+        const data = await validate(user_forgot_password_reset_password_schema, req.body);
+        req.body = data;
+        next();
+    } catch (error) {
+        next(httpResponse(req, res, VALIDATION_ERROR, error))
+    }
+}
+
+/** User forogot password reset password sort input data */
+const user_sort_forgot_password_reset_password_input_data_middleware = async (req, res, next) => {
+    try {
+        const data = await sort_update_user_forgot_password_reset_password_input_data_controller(req.body);
+        req[REQUEST_DATA] = data;
+        next();
+    } catch (error) {
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
+/** User forogt password reset password*/
+const user_forgot_password_reset_password_middleware = async (req, res, next) => {
+    try {
+        const { query, update } = req[REQUEST_DATA];
+
+        const data = await get_user_information(query);
+        const { status, response } = data;
+
+        if (status === SUCCESS) {
+
+            //Save user inforation response
+            const { status, response } = await update_user_information_controller(
+                query,
+                { $set: update }
+            );
+
+            httpResponse(req, res, status, response);
+
+        } else next(httpResponse(req, res, status, response));
+    } catch (error) {
+        console.log("error ===> ", error);
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
 module.exports = {
     signup_validation,
     signup_insert_document,
@@ -454,5 +601,13 @@ module.exports = {
 
     logout_validation_middleware,
     logout_sort_input_data_middleware,
-    logout_check_credentials_middleware
+    logout_check_credentials_middleware,
+
+    user_forgot_password_validation_middleware,
+    user_sort_forgot_password_input_data_middleware,
+    user_forgot_password_middleware,
+
+    user_forgot_password_reset_password_validation_middleware,
+    user_sort_forgot_password_reset_password_input_data_middleware,
+    user_forgot_password_reset_password_middleware
 }

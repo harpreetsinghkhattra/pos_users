@@ -9,4 +9,9 @@ module.exports = {
     COLLECTION_SELLER_USER_DETAIL: "seller_user_detail",
 
     COLLECTION_MESSAGE_PROVIDER_INFORMATION: "message_provider_information",
+
+    COLLECTION_PRODUCT_CATEGORY: "product_category",
+    COLLECTION_PRODUCT_SUB_CATEGORY: "product_sub_category",
+    COLLECTION_PRODUCT_SIZE: "product_size",
+    COLLECTION_PRODUCT_FORM: "product_form"
 }

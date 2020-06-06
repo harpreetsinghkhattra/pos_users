@@ -34,10 +34,22 @@ var logout = Joi.object({
     device_signature: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required()
 });
 
+var user_forgot_password_schema = Joi.object({
+    email: Joi.string().email().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required()
+});
+
+var user_forgot_password_reset_password_schema = Joi.object({
+    forgot_password_access_token: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
+    new_password: Joi.string().custom(customHtmlSanitizeValue).trim().pattern(new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")).message({ "string.pattern.base": "Invalid password, password must have atleast 8 characters, one uppercase character, one lower case character and one special character.", ...customSanitizeMessage }).required()
+});
+
 module.exports = {
     registeration,
     login,
     session_login,
     refresh_token,
-    logout
+    logout,
+
+    user_forgot_password_schema,
+    user_forgot_password_reset_password_schema
 }
