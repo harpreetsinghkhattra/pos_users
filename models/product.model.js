@@ -38,13 +38,23 @@ const Size = new Schema({
 }, { versionKey: false });
 
 const Form = new Schema({
+    category: { type: Schema.Types.ObjectId, ref: COLLECTION_PRODUCT_CATEGORY, required: true },
+    sub_category: { type: Schema.Types.ObjectId, ref: COLLECTION_PRODUCT_SUB_CATEGORY, required: true },
     name: { type: Schema.Types.String, required: true },
     form_keys: [{
         id: { type: Schema.Types.String, required: true },
         name: { type: Schema.Types.String, required: true },
-        type: { type: Schema.Types.String, enum: INPUT_TYPES, required: true },
-        tag: { type: Schema.Types.String, enum: INPUT_TAGS, required: true },
-        required: { type: Schema.Types.Boolean, required: true }
+        type: { type: Schema.Types.String, enum: INPUT_TYPES },
+        tag: { type: Schema.Types.String, enum: INPUT_TAGS },
+        required: { type: Schema.Types.Boolean, required: true },
+        form: [{
+            id: { type: Schema.Types.String, required: true },
+            name: { type: Schema.Types.String, required: true },
+            type: { type: Schema.Types.String, enum: INPUT_TYPES, required: true },
+            tag: { type: Schema.Types.String, enum: INPUT_TAGS, required: true },
+            required: { type: Schema.Types.Boolean, required: true }
+        }],
+        is_multiple: { type: Schema.Types.Boolean, required: true }
     }],
     status: { type: Schema.Types.String, default: ACTIVE },
     created_at: { type: Schema.Types.Date, required: true },

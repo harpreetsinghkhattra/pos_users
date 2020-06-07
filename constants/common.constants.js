@@ -42,6 +42,6 @@ module.exports = {
     ACCOUNT_VERIFIED: "verified",
     ACCOUNT_NOT_VERIFIED: "not_verified",
 
-    INPUT_TYPES: ["text", "file"],
-    INPUT_TAGS: ["input", "textarea", "select"]
+    INPUT_TYPES: ["text", "file", null],
+    INPUT_TAGS: ["input", "textarea", "select", null]
 }

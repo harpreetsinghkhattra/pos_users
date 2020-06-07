@@ -23,6 +23,7 @@ var {
     get_product_size_middleware,
 
     validate_create_product_form_middleware,
+    sort_create_product_form_input_data_middleware,
     create_product_form_middleware
 } = require("../middlewares/product.middleware");
 var { validate_credentials } = require('../middlewares/auth.middleware');
@@ -62,11 +63,11 @@ router
         get_product_size_middleware);
 
 router
-    .post("/form", 
-    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN]),
-    validate_create_product_form_middleware,
-    create_product_form_middleware
+    .post("/form",
+        (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN]),
+        validate_create_product_form_middleware,
+        sort_create_product_form_input_data_middleware,
+        create_product_form_middleware
     )
-
 
 module.exports = router;

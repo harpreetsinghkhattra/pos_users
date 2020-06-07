@@ -23,7 +23,10 @@ const {
 
     get_product_category_controller,
     get_product_sub_category_controller,
-    get_product_size_controller
+    get_product_size_controller,
+
+    sort_product_form_insert_input_data_controller,
+    insert_product_form_detail_controller
 } = require("../controller/product.controller");
 
 const { VALIDATION_ERROR, REQUEST_DATA, SUCCESS } = require('../constants/common.constants');
@@ -331,21 +334,38 @@ const validate_create_product_form_middleware = async (req, res, next) => {
     }
 }
 
+/** Sort product form input data */
+const sort_create_product_form_input_data_middleware = async (req, res, next) => {
+    try {
+        const data = await sort_product_form_insert_input_data_controller(req.body);
+        req[REQUEST_DATA] = data;
+        next();
+    } catch (error) {
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
 /** Create document */
 const create_product_form_middleware = async (req, res, next) => {
     try {
-        console.log(req.body)
-        // const { size_id } = req.params;
+        const { query, insert } = req[REQUEST_DATA];
 
-        // const { status, response } = await get_product_size_controller({
-        //     _id: size_id
-        // });
+        const { status, response } = await insert_product_form_detail_controller(query, insert);
 
-        // if (status === SUCCESS) {
-        //     httpResponse(req, res, SUCCESS, {
-        //         ...response
-        //     });
-        // } else next(httpResponse(req, res, status, response));
+        if (status === SUCCESS) {
+            httpResponse(req, res, SUCCESS, {
+                ...response
+            });
+        } else next(httpResponse(req, res, status, response));
+
     } catch (error) {
         console.log("error ===> ", error);
         let status = error && error.status && typeof error.status === "string" ? error.status : null;
@@ -383,5 +403,6 @@ module.exports = {
     get_product_size_middleware,
 
     validate_create_product_form_middleware,
+    sort_create_product_form_input_data_middleware,
     create_product_form_middleware
 }
