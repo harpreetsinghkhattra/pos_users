@@ -51,6 +51,37 @@ const create_product_form = Joi.object({
     })).required()
 })
 
+const create_product_schema = Joi.object({
+    name: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
+    detail: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
+    inclusive_of_all_taxes: Joi.boolean().required(),
+    product_code: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
+    category_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid category ID.")).trim().required(),
+    sub_category_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid sub category ID.")).trim().required(),
+    seller_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid seller ID.")).trim().required(),
+    product_type_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid product type ID.")).trim().required(),
+    size: Joi.array().items(Joi.object({
+        price: Joi.number().min(0).required(),
+        size: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid seller ID.")).trim(),
+        chest: Joi.number().min(0),
+        front_length: Joi.number().min(0),
+        across_sholder: Joi.number().min(0),
+        inseam_length: Joi.number().min(0),
+        waist: Joi.number().min(0),
+        outseam_length: Joi.number().min(0),
+        hip: Joi.number().min(0),
+        bust: Joi.number().min(0),
+        skirt_length: Joi.number().min(0),
+        choli_length: Joi.number().min(0),
+        lehenga_length: Joi.number().min(0)
+    })).required()
+});
+
+var create_product_type_schema = Joi.object({
+    category_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid category ID.")).trim().required(),
+    sub_category_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid sub category ID.")).trim().required(),
+    type: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required()
+});
 
 module.exports = {
     create_product_category_schema,
@@ -61,5 +92,7 @@ module.exports = {
     get_product_sub_category_schema,
     get_product_size_schema,
 
-    create_product_form
+    create_product_form,
+    create_product_schema,
+    create_product_type_schema
 }

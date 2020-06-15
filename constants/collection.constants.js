@@ -12,6 +12,10 @@ module.exports = {
 
     COLLECTION_PRODUCT_CATEGORY: "product_category",
     COLLECTION_PRODUCT_SUB_CATEGORY: "product_sub_category",
+    COLLECTION_PRODUCT_SIZE_TYPE: "product_size_type",
+    COLLECTION_PRODUCT_FORM: "product_form",
+    
+    COLLECTION_PRODUCT: "product",
     COLLECTION_PRODUCT_SIZE: "product_size",
-    COLLECTION_PRODUCT_FORM: "product_form"
+    COLLECTION_PRODUCT_TYPE: "product_type",
 }

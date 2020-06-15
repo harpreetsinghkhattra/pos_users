@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { COLLECTION_PRODUCT_CATEGORY, COLLECTION_PRODUCT_SUB_CATEGORY, COLLECTION_PRODUCT_SIZE, COLLECTION_PRODUCT_FORM } = require("../constants/collection.constants");
+const { COLLECTION_PRODUCT_CATEGORY, COLLECTION_PRODUCT_SUB_CATEGORY, COLLECTION_PRODUCT_SIZE, COLLECTION_PRODUCT_FORM, COLLECTION_PRODUCT, COLLECTION_PRODUCT_TYPE } = require("../constants/collection.constants");
 const { MODEL_VALIDATION_ERROR, ACCOUNT_NOT_VERIFIED, SUCCESS, PRESENT, ERROR, NOT_VALID, USER_TYPE_USER, LOGIN_TYPE_CUSTOM_USER, ACTIVE, DEACTIVE, NO_VALUE } = require("../constants/common.constants");
 var { validate } = require('../schema');
 var uuid = require('uuid/v4');
@@ -9,6 +9,8 @@ const product_category_collection = mongoose.model(COLLECTION_PRODUCT_CATEGORY);
 const product_sub_category_collection = mongoose.model(COLLECTION_PRODUCT_SUB_CATEGORY);
 const product_size_collection = mongoose.model(COLLECTION_PRODUCT_SIZE);
 const product_form_collection = mongoose.model(COLLECTION_PRODUCT_FORM);
+const product_type_collection = mongoose.model(COLLECTION_PRODUCT_TYPE);
+const product_detail_collection = mongoose.model(COLLECTION_PRODUCT);
 
 /** Sort insert product category input data */
 const sort_product_category_input_data_controller = async (data) => {
@@ -263,6 +265,53 @@ const insert_product_form_detail_controller = async (query, data) => {
     });
 }
 
+/** Sort insert product detail input data */
+const sort_product_detail_insert_input_data_controller = async (data) => {
+    return new Promise((resolve, reject) => {
+        const { name, category_id, sub_category_id, seller_id, product_type_id, ...rest } = data;
+
+        try {
+            var dates = {
+                created_at: new Date(),
+                updated_at: new Date()
+            }
+
+            resolve({
+                query: {
+                    name: RegExp(name, "i"),
+                    category: category_id,
+                    sub_category: sub_category_id,
+                    product_type: product_type_id
+                },
+                insert: {
+                    name,
+                    category: category_id,
+                    sub_category: sub_category_id,
+                    product_type: product_type_id,
+                    ...rest,
+                    ...dates
+                }
+            })
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
+/** Insert or Update product detail detail */
+const insert_or_update_product_detail_controller = async (query, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const product_detail = await product_detail_collection.findOne(query, { _id: 1 }, { runValidators: true });
+            if (product_detail && product_detail._id) return reject({ status: PRESENT, response: product_detail.toJSON() });
+            await product_detail_collection.updateOne(query, data, { upsert: true, runValidators: true });
+            resolve({ status: SUCCESS, response: data });
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
 module.exports = {
     sort_product_category_input_data_controller,
     insert_or_update_product_category_detail_controller,
@@ -278,5 +327,8 @@ module.exports = {
     get_product_size_controller,
 
     sort_product_form_insert_input_data_controller,
-    insert_product_form_detail_controller
+    insert_product_form_detail_controller,
+
+    sort_product_detail_insert_input_data_controller,
+    insert_or_update_product_detail_controller
 }
