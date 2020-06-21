@@ -43,5 +43,8 @@ module.exports = {
     ACCOUNT_NOT_VERIFIED: "not_verified",
 
     INPUT_TYPES: ["text", "file", null],
-    INPUT_TAGS: ["input", "textarea", "select", null]
+    INPUT_TAGS: ["input", "textarea", "select", null],
+
+    MALE: "male",
+    FEMALE: "female"
 }

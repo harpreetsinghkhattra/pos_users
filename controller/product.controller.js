@@ -268,7 +268,7 @@ const insert_product_form_detail_controller = async (query, data) => {
 /** Sort insert product detail input data */
 const sort_product_detail_insert_input_data_controller = async (data) => {
     return new Promise((resolve, reject) => {
-        const { name, category_id, sub_category_id, seller_id, product_type_id, ...rest } = data;
+        const { name, category_id, sub_category_id, seller_id, product_type_id, size, ...rest } = data;
 
         try {
             var dates = {
@@ -290,6 +290,63 @@ const sort_product_detail_insert_input_data_controller = async (data) => {
                     product_type: product_type_id,
                     ...rest,
                     ...dates
+                },
+                size
+            })
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
+/** Insert or Update product detail */
+const insert_or_update_product_detail_controller = async (query, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const product_detail = await product_detail_collection.findOne(query, { _id: 1 }, { runValidators: true });
+            if (product_detail && product_detail._id) return reject({ status: PRESENT, response: product_detail.toJSON() });
+            await product_detail_collection.updateOne(query, data, { upsert: true, runValidators: true });
+            resolve({ status: SUCCESS, response: data });
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
+/** Insert product sizes */
+const insert_product_sizes_controller = async (sizes) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            const stored_sizes = await product_size_collection.insertMany(sizes);
+            resolve({ status: SUCCESS, response: stored_sizes ? stored_sizes : null });
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
+/** Sort insert product type input data */
+const sort_product_type_insert_input_data_controller = async (data) => {
+    return new Promise((resolve, reject) => {
+        const { name, category_id, sub_category_id } = data;
+
+        try {
+            var dates = {
+                created_at: new Date(),
+                updated_at: new Date()
+            }
+
+            resolve({
+                query: {
+                    name: RegExp(name, "i"),
+                    category: category_id,
+                    sub_category: sub_category_id
+                },
+                insert: {
+                    name,
+                    category: category_id,
+                    sub_category: sub_category_id,
+                    ...dates
                 }
             })
         } catch (error) {
@@ -298,13 +355,13 @@ const sort_product_detail_insert_input_data_controller = async (data) => {
     });
 }
 
-/** Insert or Update product detail detail */
-const insert_or_update_product_detail_controller = async (query, data) => {
+/** Insert or Update product type detail */
+const insert_or_update_product_type_controller = async (query, data) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const product_detail = await product_detail_collection.findOne(query, { _id: 1 }, { runValidators: true });
-            if (product_detail && product_detail._id) return reject({ status: PRESENT, response: product_detail.toJSON() });
-            await product_detail_collection.updateOne(query, data, { upsert: true, runValidators: true });
+            const product_type_detail = await product_type_collection.findOne(query, { _id: 1 }, { runValidators: true });
+            if (product_type_detail && product_type_detail._id) return reject({ status: PRESENT, response: product_type_detail.toJSON() });
+            await product_type_collection.updateOne(query, data, { upsert: true, runValidators: true });
             resolve({ status: SUCCESS, response: data });
         } catch (error) {
             reject({ status: ERROR, response: error });
@@ -330,5 +387,9 @@ module.exports = {
     insert_product_form_detail_controller,
 
     sort_product_detail_insert_input_data_controller,
-    insert_or_update_product_detail_controller
+    insert_or_update_product_detail_controller,
+
+    sort_product_type_insert_input_data_controller,
+    insert_or_update_product_type_controller,
+    insert_product_sizes_controller
 }

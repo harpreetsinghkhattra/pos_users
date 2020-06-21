@@ -67,12 +67,16 @@ const sails_user_signup_insert_document_middleware = async (req, res, next) => {
             request_data_user_detail.uid = response._id;
             request_data_device_token.uid = response._id;
             request_data_sso_token.uid = response._id;
+            const query = {
+                uid: response._id,
+                device_signature: request_data_sso_token.device_signature
+            }
 
             //Save user detail response
             const save_user_detail_response = await Promise.all([
                 insert_sails_user_detail_controller(request_data_user_detail),
-                insert_sso_token(request_data_sso_token),
-                insert_device_token(request_data_device_token)
+                insert_sso_token(query, request_data_sso_token),
+                insert_device_token(query, request_data_device_token)
             ]);
 
             const [user_detail_response, data_sso_token_response] = save_user_detail_response;

@@ -19,7 +19,7 @@ const sort_insert_content_writer_user_input_data_controller = async (data) => {
             date.setDate(date.getDate() + 2);
             var expires_in = (date.getTime() - new Date().getTime()) / (1000);
 
-            var { first_name, last_name, email, password, token = null, device_type } = data;
+            var { first_name, last_name, email, password, token = null, device_type, device_signature } = data;
             var dates = {
                 created_at: new Date().toISOString(),
                 updated_at: new Date().toISOString()
@@ -52,6 +52,7 @@ const sort_insert_content_writer_user_input_data_controller = async (data) => {
                     request_data_device_token: {
                         token,
                         device_type,
+                        device_signature,
                         status: ACTIVE,
                         ...dates
                     },
@@ -59,7 +60,7 @@ const sort_insert_content_writer_user_input_data_controller = async (data) => {
                         access_token,
                         refresh_token,
                         expires_in,
-                        device_signature: null,
+                        device_signature,
                         status: ACTIVE,
                         ...dates
                     }

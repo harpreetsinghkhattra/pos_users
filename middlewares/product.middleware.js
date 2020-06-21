@@ -31,7 +31,11 @@ const {
     insert_product_form_detail_controller,
 
     sort_product_detail_insert_input_data_controller,
-    insert_or_update_product_detail_controller
+    insert_or_update_product_detail_controller,
+
+    sort_product_type_insert_input_data_controller,
+    insert_or_update_product_type_controller,
+    insert_product_sizes_controller
 } = require("../controller/product.controller");
 
 const { VALIDATION_ERROR, REQUEST_DATA, SUCCESS } = require('../constants/common.constants');
@@ -418,9 +422,68 @@ const sort_create_product_detail_input_data_middleware = async (req, res, next) 
 /** Create document */
 const create_product_detail_middleware = async (req, res, next) => {
     try {
+        const { query, insert, size } = req[REQUEST_DATA];
+        const { status: size_status, response: size_response } = await insert_product_sizes_controller(size);
+        if(size_status === SUCCESS) insert.size = size_response && size_response.length ? size_response.map(ele => ele._id) : [];
+        console.log(size_status, insert);
+        const { status, response } = await insert_or_update_product_detail_controller(query, insert);
+
+        if (status === SUCCESS) {
+            httpResponse(req, res, SUCCESS, {
+                ...response
+            });
+        } else next(httpResponse(req, res, status, response));
+
+    } catch (error) {
+        console.log("error ===> ", error);
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
+/** create product type validate schema */
+const validate_create_product_type_middleware = async (req, res, next) => {
+    try {
+        const data = await validate(create_product_type_schema, req.body);
+        req.body = data;
+        next();
+    } catch (error) {
+        next(httpResponse(req, res, VALIDATION_ERROR, error))
+    }
+}
+
+/** Sort product type input data */
+const sort_create_product_type_input_data_middleware = async (req, res, next) => {
+    try {
+        const data = await sort_product_type_insert_input_data_controller(req.body);
+        req[REQUEST_DATA] = data;
+        next();
+    } catch (error) {
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
+/** Create document */
+const create_product_type_middleware = async (req, res, next) => {
+    try {
         const { query, insert } = req[REQUEST_DATA];
 
-        const { status, response } = await insert_or_update_product_detail_controller(query, insert);
+        const { status, response } = await insert_or_update_product_type_controller(query, insert);
 
         if (status === SUCCESS) {
             httpResponse(req, res, SUCCESS, {
@@ -470,5 +533,9 @@ module.exports = {
 
     validate_create_product_detail_middleware,
     sort_create_product_detail_input_data_middleware,
-    create_product_detail_middleware
+    create_product_detail_middleware,
+
+    sort_create_product_type_input_data_middleware,
+    create_product_type_middleware,
+    validate_create_product_type_middleware
 }

@@ -1,7 +1,7 @@
 const Joi = require('@hapi/joi');
 const { customHtmlSanitizeValue, customSanitizeMessage } = require("./html.sanitize");
 const { checkMongodbObjectId } = require('.');
-const { INPUT_TYPES, INPUT_TAGS } = require("../constants/common.constants");
+const { INPUT_TYPES, INPUT_TAGS, MALE, FEMALE } = require("../constants/common.constants");
 
 var create_product_category_schema = Joi.object({
     name: Joi.string().min(1).max(20).custom(customHtmlSanitizeValue).trim().message({ ...customSanitizeMessage }).required()
@@ -55,6 +55,8 @@ const create_product_schema = Joi.object({
     name: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
     detail: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
     inclusive_of_all_taxes: Joi.boolean().required(),
+    is_for_kids: Joi.boolean().required(),
+    gender: Joi.string().valid(MALE, FEMALE).custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
     product_code: Joi.string().custom(customHtmlSanitizeValue).message({ ...customSanitizeMessage }).trim().required(),
     category_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid category ID.")).trim().required(),
     sub_category_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid sub category ID.")).trim().required(),
@@ -62,7 +64,7 @@ const create_product_schema = Joi.object({
     product_type_id: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid product type ID.")).trim().required(),
     size: Joi.array().items(Joi.object({
         price: Joi.number().min(0).required(),
-        size: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid seller ID.")).trim(),
+        size: Joi.string().custom((value, helper) => checkMongodbObjectId(value, helper, "Invalid size ID.")).trim(),
         chest: Joi.number().min(0),
         front_length: Joi.number().min(0),
         across_sholder: Joi.number().min(0),

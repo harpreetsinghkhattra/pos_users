@@ -76,18 +76,23 @@ const admin_signup_insert_document_middleware = async (req, res, next) => {
             request_data_user_detail.uid = response._id;
             request_data_device_token.uid = response._id;
             request_data_sso_token.uid = response._id;
+            const query = {
+                uid: response._id,
+                device_signature: request_data_sso_token.device_signature
+            }
 
             //Save user detail response
             const save_user_detail_response = await Promise.all([
                 insert_admin_detail_controller(request_data_user_detail),
-                insert_sso_token(request_data_sso_token),
-                insert_device_token(request_data_device_token)
+                insert_sso_token(query, request_data_sso_token),
+                insert_device_token(query, request_data_device_token)
             ]);
 
             const [user_detail_response, data_sso_token_response] = save_user_detail_response;
+            console.log("save_user_detail_response ===>", data_sso_token_response, request_data_sso_token);
 
             const { created_at, updated_at, ...rest_user_detail_response } = user_detail_response.response;
-            const { device_signature, created_at: token_created_at, updated_at: token_updated_at, ...rest_data_sso_token_response } = data_sso_token_response.response;
+            const { device_signature, created_at: token_created_at, updated_at: token_updated_at, ...rest_data_sso_token_response } = data_sso_token_response.response || {};
 
             httpResponse(req, res, SUCCESS, {
                 user_detail: { ...rest_user_detail_response },
@@ -170,12 +175,15 @@ const admin_login_check_credentials_middleware = async (req, res, next) => {
 const get_admin_user_detail_middleware = async (req, res, next) => {
     try {
         const { uid } = req[AUTH_DATA];
+        console.log("uid ===> ", uid);
 
         //Get user detail response
         const save_user_detail_response = await Promise.all([
-            get_user_detail({ uid: uid }),
+            get_admin_user_detail_controller({ uid: uid }),
             get_sso_user_token({ uid: uid })
         ]);
+
+        console.log("save_user_detail_response ===> ", save_user_detail_response);
 
         const [user_detail_response, data_sso_token_response] = save_user_detail_response;
 

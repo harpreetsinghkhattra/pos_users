@@ -28,7 +28,11 @@ var {
 
     validate_create_product_detail_middleware,
     sort_create_product_detail_input_data_middleware,
-    create_product_detail_middleware
+    create_product_detail_middleware,
+
+    sort_create_product_type_input_data_middleware,
+    create_product_type_middleware,
+    validate_create_product_type_middleware
 } = require("../middlewares/product.middleware");
 var { validate_credentials } = require('../middlewares/auth.middleware');
 var { USER_TYPE_SUPER_ADMIN, USER_TYPE_CONTENT_WRITER, USER_TYPE_SELLER } = require("../constants/common.constants");
@@ -80,6 +84,14 @@ router
         validate_create_product_detail_middleware,
         sort_create_product_detail_input_data_middleware,
         create_product_detail_middleware
+    )
+
+router
+    .post("/create/type",
+        (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN, USER_TYPE_CONTENT_WRITER, USER_TYPE_SELLER]),
+        validate_create_product_type_middleware,
+        sort_create_product_type_input_data_middleware,
+        create_product_type_middleware
     )
 
 module.exports = router;
