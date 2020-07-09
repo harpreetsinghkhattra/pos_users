@@ -31,7 +31,7 @@ var {
     validate_credentials,
     validate_refresh_token_credentials
 } = require("../middlewares/auth.middleware");
-const { USER_TYPE_USER, USER_TYPE_CONTENT_WRITER, USER_TYPE_MARKETING, USER_TYPE_SELLER } = require("../constants/common.constants");
+const { USER_TYPE_USER, USER_TYPE_CONTENT_WRITER, USER_TYPE_MARKETING, USER_TYPE_SELLER, USER_TYPE_SUPER_ADMIN } = require("../constants/common.constants");
 
 router.post("/login",
     login_validation,
@@ -39,13 +39,13 @@ router.post("/login",
     login_check_credentials);
 
 router.get("/session_login/:device_signature",
-    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_USER, USER_TYPE_CONTENT_WRITER, USER_TYPE_MARKETING, USER_TYPE_SELLER]),
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_USER, USER_TYPE_CONTENT_WRITER, USER_TYPE_MARKETING, USER_TYPE_SELLER, USER_TYPE_SUPER_ADMIN]),
     session_login_validation_middleware,
     session_login_sort_input_data_middleware,
     session_login_or_refresh_token_check_credentials_middleware);
 
 router.get("/refresh_token/:device_signature",
-    (req, res, next) => validate_refresh_token_credentials(req, res, next, [USER_TYPE_USER, USER_TYPE_CONTENT_WRITER, USER_TYPE_MARKETING, USER_TYPE_SELLER]),
+    (req, res, next) => validate_refresh_token_credentials(req, res, next, [USER_TYPE_USER, USER_TYPE_CONTENT_WRITER, USER_TYPE_MARKETING, USER_TYPE_SELLER, USER_TYPE_SUPER_ADMIN]),
     refresh_token_validation_middleware,
     refresh_access_token_sort_input_data_middleware,
     session_login_or_refresh_token_check_credentials_middleware);

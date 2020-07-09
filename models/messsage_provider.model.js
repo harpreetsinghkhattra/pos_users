@@ -12,11 +12,12 @@ const MessageProvider = new Schema({
     username: { type: Schema.Types.String, required: true },
     password: { type: Schema.Types.String, required: true },
     total_emails: { type: Schema.Types.Number, required: true },
+    used_emails_today: { type: Schema.Types.Number, default: 0 },
     account_created_date: { type: Schema.Types.Date, required: true },
     status: { type: Schema.Types.String, enum: [ACTIVE, DEACTIVE], required: true },
     deleted_status: { type: Schema.Types.String, enum: [ACTIVE, DEACTIVE], required: true },
     created_at: { type: Schema.Types.Date, required: true },
     updated_at: { type: Schema.Types.Date, required: true }
-});
+}, { versionKey: false });
 
 mongoose.model(COLLECTION_MESSAGE_PROVIDER_INFORMATION, MessageProvider);

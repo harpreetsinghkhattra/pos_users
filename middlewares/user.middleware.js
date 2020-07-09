@@ -20,6 +20,7 @@ const {
     get_user_detail,
     check_credentials,
     get_sso_user_token,
+    get_user_information,
 
     sort_session_login_user_input_data_controller,
     sort_refresh_token_input_data_controller,
@@ -44,6 +45,11 @@ const {
 const {
     get_sails_user_detail_controller
 } = require("../controller/sails.controller");
+
+var {
+    get_message_provider_controller,
+    send_mail_controller
+} = require("../controller/message.controller");
 
 const { VALIDATION_ERROR, REQUEST_DATA, SUCCESS, AUTH_DATA, USER_TYPE_SUPER_ADMIN, USER_TYPE_MARKETING, USER_TYPE_CONTENT_WRITER, USER_TYPE_SELLER, USER_TYPE_USER } = require('../constants/common.constants');
 var { ObjectId } = require('mongodb');
@@ -500,6 +506,26 @@ const user_forgot_password_middleware = async (req, res, next) => {
 
             console.log("status ===> ", status);
 
+            //Send email notification
+            const query = {
+                $or: [
+                    {
+                        $and: [
+                            {
+                                used_emails_today: { $lte: 250 }
+                            }, {
+                                updated_at: { $eq: new Date().toISOString() }
+                            }
+                        ]
+                    },
+                    {
+                        updated_at: { $lte: new Date().toISOString() }
+                    }
+                ]
+            };
+            const { status: message_provider_status, response: message_provider_response } = get_message_provider_controller(query, {});
+
+            console.log("message_provider_response ===> ", message_provider_response, JSON.stringify(query));
             httpResponse(req, res, status, response);
 
         } else next(httpResponse(req, res, status, response));

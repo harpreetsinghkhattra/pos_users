@@ -116,7 +116,7 @@ const list_message_provider_controller = async (query = null) => {
 }
 
 /** Get Message Provider */
-const get_message_provider_controller = async (query = null) => {
+const get_message_provider_controller = async (query = null, projection = { password: 0 }) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!query) {
@@ -124,11 +124,51 @@ const get_message_provider_controller = async (query = null) => {
                 return;
             }
 
-            const data = await message_collection.findOne(query, { password: 0 });
+            const data = await message_collection.findOne(query, projection);
 
             resolve({
                 status: SUCCESS,
                 response: data.toJSON()
+            })
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
+/** Send mail */
+const send_mail_controller = async (prodvider_detail) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!prodvider_detail) {
+                reject({ status: NOT_VALID, response: {} });
+                return;
+            }
+
+            //Message provider detail
+            const { username, password, host, port } = prodvider_detail;
+
+            let transporter = nodemailer.createTransport({
+                host: host,
+                port: port,
+                secure: false,
+                auth: {
+                    user: username,
+                    pass: password
+                },
+            });
+
+            let info = await transporter.sendMail({
+                from: 'pos1592733811749@outlook.com', // sender address
+                to: "posprovidertpsharma@mailinator.com", // list of receivers
+                subject: "Hello ✔", // Subject line
+                text: "Hello world?", // plain text body
+                html: "<b>Hello world?</b>", // html body
+            });
+
+            resolve({
+                status: SUCCESS,
+                response: {}
             })
         } catch (error) {
             reject({ status: ERROR, response: error });
@@ -142,5 +182,6 @@ module.exports = {
     insert_message_provider_detail,
     find_message_provider,
     list_message_provider_controller,
-    get_message_provider_controller
+    get_message_provider_controller,
+    send_mail_controller
 }

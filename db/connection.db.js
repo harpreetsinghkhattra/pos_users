@@ -13,7 +13,7 @@ var client = undefined;
 const connection = function () {
 
     mongoose.connection
-        .on('error', () => console.log("data ===> ", data))
+        .on('error', () => console.log("data ===> "))
         .on('disconnected', connection)
         .on('open', function () {
             console.log("Mongodb Connected.");
@@ -28,8 +28,8 @@ const getDB = () => db;
 /** Get client */
 const getClient = () => client;
 
-// let uri = "mongodb://3.15.230.14/alpha_pos";
-let uri = "mongodb://localhost:27017/alpha_pos";
+let uri = "mongodb://3.15.230.14/alpha_pos";
+// let uri = "mongodb://localhost:27017/alpha_pos";
 
 module.exports = {
     connection,
