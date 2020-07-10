@@ -48,7 +48,9 @@ const {
 
 var {
     get_message_provider_controller,
-    send_mail_controller
+    send_mail_controller,
+
+    send_forgot_password_mail_controller
 } = require("../controller/message.controller");
 
 const { VALIDATION_ERROR, REQUEST_DATA, SUCCESS, AUTH_DATA, USER_TYPE_SUPER_ADMIN, USER_TYPE_MARKETING, USER_TYPE_CONTENT_WRITER, USER_TYPE_SELLER, USER_TYPE_USER } = require('../constants/common.constants');
@@ -504,28 +506,31 @@ const user_forgot_password_middleware = async (req, res, next) => {
                 { $set: { ...rest } }
             );
 
-            console.log("status ===> ", status);
-
             //Send email notification
-            const query = {
-                $or: [
-                    {
-                        $and: [
-                            {
-                                used_emails_today: { $lte: 250 }
-                            }, {
-                                updated_at: { $eq: new Date().toISOString() }
-                            }
-                        ]
-                    },
-                    {
-                        updated_at: { $lte: new Date().toISOString() }
-                    }
-                ]
-            };
-            const { status: message_provider_status, response: message_provider_response } = get_message_provider_controller(query, {});
+            // const start_date = new Date()
+            // start_date.setHours(0, 0, 0, 999);
 
-            console.log("message_provider_response ===> ", message_provider_response, JSON.stringify(query));
+            // const check_today_provider_query = {
+            //     $and: [
+            //         {
+            //             used_emails_today: { $lte: 250 }
+            //         }, {
+            //             updated_at: { $lte: new Date(), $gte: start_date }
+            //         }
+            //     ]
+            // }
+
+            // const check_previous_date_provider_query = {
+            //     updated_at: { $lt: start_date }
+            // };
+            const query = {};
+
+            const { status: message_provider_status, response: message_provider_response } = await get_message_provider_controller(query, {});
+
+            if (message_provider_status === SUCCESS) {
+                await send_forgot_password_mail_controller(message_provider_response, { email, ...rest })
+            }
+
             httpResponse(req, res, status, response);
 
         } else next(httpResponse(req, res, status, response));

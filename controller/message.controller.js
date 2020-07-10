@@ -2,6 +2,8 @@ var mongoose = require('mongoose');
 const { COLLECTION_MESSAGE_PROVIDER_INFORMATION } = require("../constants/collection.constants");
 const { MODEL_VALIDATION_ERROR, SUCCESS, PRESENT, ERROR, NOT_VALID, ACTIVE, DEACTIVE } = require("../constants/common.constants");
 var { validate } = require('../schema');
+var nodemailer = require('nodemailer');
+require("dotenv");
 
 const message_collection = mongoose.model(COLLECTION_MESSAGE_PROVIDER_INFORMATION);
 
@@ -116,7 +118,7 @@ const list_message_provider_controller = async (query = null) => {
 }
 
 /** Get Message Provider */
-const get_message_provider_controller = async (query = null, projection = { password: 0 }) => {
+const get_message_provider_controller = async (query = null, projection = { username: 1, password: 1, host: 1, port: 1 }) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!query) {
@@ -137,7 +139,7 @@ const get_message_provider_controller = async (query = null, projection = { pass
 }
 
 /** Send mail */
-const send_mail_controller = async (prodvider_detail) => {
+const send_mail_controller = async (prodvider_detail, obj) => {
     return new Promise(async (resolve, reject) => {
         try {
             if (!prodvider_detail) {
@@ -147,6 +149,7 @@ const send_mail_controller = async (prodvider_detail) => {
 
             //Message provider detail
             const { username, password, host, port } = prodvider_detail;
+            const { email, forgot_password_access_token } = obj;
 
             let transporter = nodemailer.createTransport({
                 host: host,
@@ -160,10 +163,56 @@ const send_mail_controller = async (prodvider_detail) => {
 
             let info = await transporter.sendMail({
                 from: 'pos1592733811749@outlook.com', // sender address
-                to: "posprovidertpsharma@mailinator.com", // list of receivers
+                to: to_email, // list of receivers
                 subject: "Hello ✔", // Subject line
                 text: "Hello world?", // plain text body
                 html: "<b>Hello world?</b>", // html body
+            });
+
+            resolve({
+                status: SUCCESS,
+                response: {}
+            })
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
+/** Send forgot password mail */
+const send_forgot_password_mail_controller = async (prodvider_detail, obj) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            if (!prodvider_detail) {
+                reject({ status: NOT_VALID, response: {} });
+                return;
+            }
+
+            //Message provider detail
+            const { username, password, host, port } = prodvider_detail;
+            const { email, forgot_password_access_token } = obj;
+
+            let transporter = nodemailer.createTransport({
+                host: host,
+                port: port,
+                secure: false,
+                auth: {
+                    user: username,
+                    pass: password
+                },
+            });
+
+            let info = await transporter.sendMail({
+                from: 'pos1592733811749@outlook.com', // sender address
+                to: email,
+                subject: "Forgot Password",
+                html: `
+                    <p>
+                        Forgot Password
+                        <br>
+                        <a href="${process.env.BASE_URL}/reset/password/${forgot_password_access_token}">Reset Password</a>
+                    </p>
+                `
             });
 
             resolve({
@@ -183,5 +232,7 @@ module.exports = {
     find_message_provider,
     list_message_provider_controller,
     get_message_provider_controller,
-    send_mail_controller
+    send_mail_controller,
+
+    send_forgot_password_mail_controller
 }
