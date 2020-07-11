@@ -23,6 +23,8 @@ const validate_header = (req, res, next) => {
 
 const validate_credentials = async (req, res, next, user_types) => {
     try {
+        console.log("req.headers ===> ", req.headers);
+        
         const id = req.headers.id;
         const access_token = req.headers.access_token;
 
