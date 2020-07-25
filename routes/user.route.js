@@ -7,7 +7,11 @@ var {
     login_validation,
     login_sort_input_data,
     login_check_credentials,
-    get_user_detail_middleware
+    get_user_detail_middleware,
+
+    update_user_detail_validation_middleware,
+    update_user_detail_input_data_middleware,
+    update_user_detail_middleware
 } = require("../middlewares/user.middleware");
 var { validate_credentials } = require('../middlewares/auth.middleware');
 var { USER_TYPE_USER } = require("../constants/common.constants");
@@ -19,5 +23,11 @@ router.post("/signup",
 router.get("/",
     (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_USER]),
     get_user_detail_middleware);
+
+router.post("/edit",
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_USER]),
+    update_user_detail_validation_middleware,
+    update_user_detail_input_data_middleware,
+    update_user_detail_middleware);
 
 module.exports = router;

@@ -148,6 +148,25 @@ const update_content_writer_detail_controller = async (filter, update) => {
     });
 }
 
+/** Validate edit seller model */
+const validate_edit_seller_model = (schema, obj = {}) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await validate(schema, obj);
+            resolve({
+                status: SUCCESS,
+                response: null
+            });
+        } catch (error) {
+            console.log("validation error ===> ", error);
+            reject({
+                status: MODEL_VALIDATION_ERROR,
+                response: error
+            })
+        }
+    })
+}
+
 module.exports = {
     insert_content_writer_detail_controller,
     sort_insert_content_writer_user_input_data_controller,

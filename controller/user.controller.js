@@ -609,6 +609,47 @@ const sort_logout_input_data_controller = async (data) => {
     });
 }
 
+/** Sort edit user input data */
+const sort_edit_user_input_data_controller = async (data) => {
+    return new Promise((resolve, reject) => {
+        try {
+
+            var { first_name, last_name, mobile_code, mobile_number, uid } = data;
+            var dates = {
+                created_at: new Date(),
+                updated_at: new Date()
+            }
+
+            resolve({
+                query: {
+                    uid
+                },
+                request_data_user_detail: {
+                    first_name,
+                    last_name,
+                    mobile_code,
+                    mobile_number,
+                    ...dates
+                }
+            })
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
+
+/** Edit user detail */
+const edit_user_detail_controller = async (query, data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            await user_detail_collection.updateOne(query, data);
+            const res = await user_detail_collection.findOne(query);
+            resolve({ status: SUCCESS, response: res._doc });
+        } catch (error) {
+            reject({ status: ERROR, response: error });
+        }
+    });
+}
 
 module.exports = {
     insert_user_detail,
@@ -638,5 +679,8 @@ module.exports = {
 
     sort_logout_input_data_controller,
 
-    update_device_token_controller
+    update_device_token_controller,
+
+    sort_edit_user_input_data_controller,
+    edit_user_detail_controller
 }

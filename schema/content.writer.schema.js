@@ -33,10 +33,17 @@ var content_writer_change_password_schema = Joi.object({
     new_password: Joi.string().custom(customHtmlSanitizeValue).trim().pattern(new RegExp("^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$")).message({ "string.pattern.base": "Invalid password, password must have atleast 8 characters, one uppercase character, one lower case character and one special character.", ...customSanitizeMessage }).required()
 });
 
+// var content_writer_edit_profile_schema = Joi.object({
+//     first_name: Joi.string().min(3).max(20).custom(customHtmlSanitizeValue).trim().message({ ...customSanitizeMessage }).required(),
+//     last_name: Joi.string().min(3).max(20).custom(customHtmlSanitizeValue).trim().message({ ...customSanitizeMessage }).required(),
+//     mobile_number: Joi.string().min(10).max(10).allow(null)
+// });
+
 var content_writer_edit_profile_schema = Joi.object({
-    first_name: Joi.string().min(3).max(20).custom(customHtmlSanitizeValue).trim().message({ ...customSanitizeMessage }).required(),
-    last_name: Joi.string().min(3).max(20).custom(customHtmlSanitizeValue).trim().message({ ...customSanitizeMessage }).required(),
-    mobile_number: Joi.string().min(10).max(10).allow(null)
+    first_name: Joi.string().min(3).max(20).custom(customHtmlSanitizeValue).trim().allow(null).message({ ...customSanitizeMessage }).required(),
+    last_name: Joi.string().min(3).max(20).custom(customHtmlSanitizeValue).trim().allow(null).message({ ...customSanitizeMessage }).required(),
+    mobile_code: Joi.string().min(3).max(3).custom(customHtmlSanitizeValue).trim().allow(null).message({ ...customSanitizeMessage }).required(),
+    mobile_number: Joi.string().min(10).max(15).custom(customHtmlSanitizeValue).trim().allow(null).message({ ...customSanitizeMessage }).required()
 });
 
 module.exports = {

@@ -3,7 +3,9 @@ var {
     admin_registeration_schema,
     admin_forgot_password_schema,
     admin_forgot_password_reset_password_schema,
-    admin_change_password_schema
+    admin_change_password_schema,
+
+    admin_edit_profile_schema
 } = require("../schema/admin.schema");
 var { validate } = require('../schema');
 const { httpResponse } = require("../controller/response.controller");
@@ -29,6 +31,9 @@ const {
     sort_insert_admin_user_input_data_controller,
     insert_admin_detail_controller,
     get_admin_user_detail_controller,
+
+    sort_edit_admin_input_data_controller,
+    edit_admin_detail_controller
 } = require("../controller/admin.controller");
 const { VALIDATION_ERROR, REQUEST_DATA, SUCCESS, AUTH_DATA } = require('../constants/common.constants');
 
@@ -401,6 +406,63 @@ const admin_change_password_middleware = async (req, res, next) => {
     }
 }
 
+/** Update admin detail validation */
+const update_admin_detail_validation_middleware = async (req, res, next) => {
+    try {
+        const data = await validate(admin_edit_profile_schema, req.body);
+        req.body = data;
+        next();
+    } catch (error) {
+        next(httpResponse(req, res, VALIDATION_ERROR, error))
+    }
+}
+
+/** Update admin detail sort input data */
+const update_admin_detail_input_data_middleware = async (req, res, next) => {
+    try {
+        const { uid } = req[AUTH_DATA];
+        const data = await sort_edit_admin_input_data_controller({ ...req.body, uid });
+        req[REQUEST_DATA] = data;
+        next();
+    } catch (error) {
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
+
+/** Update admin detail document */
+const update_admin_detail_middleware = async (req, res, next) => {
+    try {
+        let { query, request_data_user_detail } = req[REQUEST_DATA];
+
+        const { status, response } = await get_admin_user_detail_controller(query);
+
+        if (status === SUCCESS) {
+            const data = await edit_admin_detail_controller(request_data_user_detail);
+
+            if(data.status === SUCCESS) httpResponse(req, res, data.status, data.response)
+            else next(httpResponse(req, res, data.status, data.response));
+        } else next(httpResponse(req, res, status, response));
+    } catch (error) {
+        console.log("error ===> ", error);
+        let status = error && error.status && typeof error.status === "string" ? error.status : null;
+
+        if (status) {
+            let response = error.response;
+            next(httpResponse(req, res, status, response));
+            return;
+        }
+
+        next(error);
+    }
+}
 
 module.exports = {
     admin_signup_validation_middleware,
@@ -422,5 +484,9 @@ module.exports = {
 
     admin_change_password_validation_middleware,
     admin_sort_change_password_input_data_middleware,
-    admin_change_password_middleware
+    admin_change_password_middleware,
+
+    update_admin_detail_validation_middleware,
+    update_admin_detail_input_data_middleware,
+    update_admin_detail_middleware
 }

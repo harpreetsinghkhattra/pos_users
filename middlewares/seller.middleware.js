@@ -1,12 +1,7 @@
 var {
-    sails_registeration_schema,
-    sails_login_schema,
-    sails_forgot_password_schema,
-    sails_forgot_password_reset_password_schema,
-    sails_change_password_schema,
-
-    sails_edit_profile_schema
-} = require("../schema/sails.schema");
+    seller_registeration,
+    seller_edit_profile
+} = require("../schema/seller.schema");
 var { validate } = require('../schema');
 const { httpResponse } = require("../controller/response.controller");
 const {
@@ -15,23 +10,27 @@ const {
     insert_device_token,
     find_user,
 
-    check_credentials,
+    sort_login_user_input_data: login_sort_input_data_controller,
+    get_user_detail,
     get_sso_user_token
 } = require("../controller/user.controller");
 const {
-    insert_sails_user_detail_controller,
-    sort_insert_sails_user_input_data_controller,
-    get_sails_user_detail_controller,
+    sort_insert_seller_input_data,
+    insert_seller_detail,
+    get_seller_detail,
 
-    sort_edit_sails_input_data_controller,
-    edit_sails_detail_controller
-} = require("../controller/sails.controller");
-const { VALIDATION_ERROR, REQUEST_DATA, SUCCESS, AUTH_DATA } = require('../constants/common.constants');
+    validate_edit_seller_model,
+    sort_edit_seller_input_data,
+    edit_seller_detail
+} = require("../controller/seller.controller");
 
-/** Sails user signup validation */
-const sails_user_signup_validation_middleware = async (req, res, next) => {
+const { VALIDATION_ERROR, REQUEST_DATA, SUCCESS, AUTH_DATA, USER_TYPE_SUPER_ADMIN, USER_TYPE_MARKETING, USER_TYPE_CONTENT_WRITER, USER_TYPE_SELLER, USER_TYPE_USER, USER_DATA } = require('../constants/common.constants');
+var { ObjectId } = require('mongodb');
+
+/** Seller signup validation */
+const seller_signup_validation = async (req, res, next) => {
     try {
-        const data = await validate(sails_registeration_schema, req.body);
+        const data = await validate(seller_registeration, req.body);
         req.body = data;
         next();
     } catch (error) {
@@ -39,10 +38,10 @@ const sails_user_signup_validation_middleware = async (req, res, next) => {
     }
 }
 
-/** Sails user signup sort input data */
-const sails_user_signup_sort_input_data_middleware = async (req, res, next) => {
+/** Seller signup sort input data */
+const seller_signup_sort_input_data = async (req, res, next) => {
     try {
-        const data = await sort_insert_sails_user_input_data_controller(req.body);
+        const data = await sort_insert_seller_input_data(req.body);
         req[REQUEST_DATA] = data;
         next();
     } catch (error) {
@@ -59,8 +58,9 @@ const sails_user_signup_sort_input_data_middleware = async (req, res, next) => {
 }
 
 /** Insert document */
-const sails_user_signup_insert_document_middleware = async (req, res, next) => {
+const seller_signup_insert_document = async (req, res, next) => {
     try {
+        console.log("Signup insert document");
         let { request_data_user_detail, request_data_user_infromation, request_data_device_token, request_data_sso_token } = req[REQUEST_DATA];
 
         await find_user({ email: req.body.email });
@@ -79,7 +79,7 @@ const sails_user_signup_insert_document_middleware = async (req, res, next) => {
 
             //Save user detail response
             const save_user_detail_response = await Promise.all([
-                insert_sails_user_detail_controller(request_data_user_detail),
+                insert_seller_detail(request_data_user_detail),
                 insert_sso_token(query, request_data_sso_token),
                 insert_device_token(query, request_data_device_token)
             ]);
@@ -109,72 +109,15 @@ const sails_user_signup_insert_document_middleware = async (req, res, next) => {
     }
 }
 
-/** Sails user login validation */
-const sails_user_login_validation_middleware = async (req, res, next) => {
-    try {
-        const data = await validate(sails_login_schema, req.body);
-        req.body = data;
-        next();
-    } catch (error) {
-        next(httpResponse(req, res, VALIDATION_ERROR, error))
-    }
-}
-
-/** Sails user login check credentials */
-const sails_user_login_check_credentials_middleware = async (req, res, next) => {
-    try {
-        console.log("Login check credentials");
-        const { request_data_user_infromation, request_data_device_token, request_data_sso_token } = req[REQUEST_DATA];
-
-        const data = await check_credentials(request_data_user_infromation);
-        const { status, response } = data;
-
-        if (status === SUCCESS) {
-            //Update uid in request data to validate them
-            request_data_device_token.uid = response._id;
-            request_data_sso_token.uid = response._id;
-
-            //Save user detail response
-            const save_user_detail_response = await Promise.all([
-                get_sails_user_detail_controller({ uid: response._id }),
-                insert_sso_token(request_data_sso_token),
-                insert_device_token(request_data_device_token)
-            ]);
-
-            const [user_detail_response, data_sso_token_response] = save_user_detail_response;
-
-            const { created_at, updated_at, ...rest_user_detail_response } = user_detail_response.response;
-            const { device_signature, created_at: token_created_at, updated_at: token_updated_at, ...rest_data_sso_token_response } = data_sso_token_response.response;
-
-            httpResponse(req, res, SUCCESS, {
-                user_detail: { ...rest_user_detail_response },
-                token: { ...rest_data_sso_token_response }
-            });
-
-        } else next(httpResponse(req, res, status, response));
-    } catch (error) {
-        console.log("error ===> ", error);
-        let status = error && error.status && typeof error.status === "string" ? error.status : null;
-
-        if (status) {
-            let response = error.response;
-            next(httpResponse(req, res, status, response));
-            return;
-        }
-
-        next(error);
-    }
-}
-
-/** Get sails user detail */
-const get_sails_user_detail_middleware = async (req, res, next) => {
+/** Get seller detail */
+const get_seller_detail_middleware = async (req, res, next) => {
     try {
         const { uid } = req[AUTH_DATA];
 
-        //Get user detail response
+        //Save user detail response
         const save_user_detail_response = await Promise.all([
-            get_sails_user_detail_controller({ uid: uid }),
-            get_sso_user_token({ uid: uid })
+            get_seller_detail({ uid: ObjectId(uid) }),
+            get_sso_user_token({ uid: ObjectId(uid) })
         ]);
 
         const [user_detail_response, data_sso_token_response] = save_user_detail_response;
@@ -200,10 +143,10 @@ const get_sails_user_detail_middleware = async (req, res, next) => {
     }
 }
 
-/** Update sails detail validation */
-const update_sails_detail_validation_middleware = async (req, res, next) => {
+/** Update seller detail validation */
+const update_seller_detail_validation_middleware = async (req, res, next) => {
     try {
-        const data = await validate(sails_edit_profile_schema, req.body);
+        const data = await validate(seller_edit_profile, req.body);
         req.body = data;
         next();
     } catch (error) {
@@ -211,11 +154,11 @@ const update_sails_detail_validation_middleware = async (req, res, next) => {
     }
 }
 
-/** Update sails detail sort input data */
-const update_sails_detail_input_data_middleware = async (req, res, next) => {
+/** Update seller detail sort input data */
+const update_seller_detail_input_data_middleware = async (req, res, next) => {
     try {
         const { uid } = req[AUTH_DATA];
-        const data = await sort_edit_sails_input_data_controller({ ...req.body, uid });
+        const data = await sort_edit_seller_input_data({ ...req.body, uid });
         req[REQUEST_DATA] = data;
         next();
     } catch (error) {
@@ -231,17 +174,17 @@ const update_sails_detail_input_data_middleware = async (req, res, next) => {
     }
 }
 
-/** Update sails detail document */
-const update_sails_detail_middleware = async (req, res, next) => {
+/** Update seller detail document */
+const update_seller_detail_middleware = async (req, res, next) => {
     try {
         let { query, request_data_user_detail } = req[REQUEST_DATA];
 
-        const { status, response } = await get_sails_user_detail_controller(query);
+        const { status, response } = await get_seller_detail(query);
 
         if (status === SUCCESS) {
-            const data = await edit_sails_detail_controller(request_data_user_detail);
+            const data = await edit_seller_detail(request_data_user_detail);
 
-            if (data.status === SUCCESS) httpResponse(req, res, data.status, data.response)
+            if(data.status === SUCCESS) httpResponse(req, res, data.status, data.response)
             else next(httpResponse(req, res, data.status, data.response));
         } else next(httpResponse(req, res, status, response));
     } catch (error) {
@@ -259,16 +202,13 @@ const update_sails_detail_middleware = async (req, res, next) => {
 }
 
 module.exports = {
-    sails_user_signup_validation_middleware,
-    sails_user_signup_insert_document_middleware,
-    sails_user_signup_sort_input_data_middleware,
+    seller_signup_validation,
+    seller_signup_sort_input_data,
+    seller_signup_insert_document,
 
-    sails_user_login_validation_middleware,
-    sails_user_login_check_credentials_middleware,
+    get_seller_detail_middleware,
 
-    get_sails_user_detail_middleware,
-
-    update_sails_detail_validation_middleware,
-    update_sails_detail_input_data_middleware,
-    update_sails_detail_middleware
+    update_seller_detail_validation_middleware,
+    update_seller_detail_input_data_middleware,
+    update_seller_detail_middleware
 }

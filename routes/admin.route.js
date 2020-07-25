@@ -25,7 +25,11 @@ var {
 
     admin_change_password_validation_middleware,
     admin_sort_change_password_input_data_middleware,
-    admin_change_password_middleware
+    admin_change_password_middleware,
+
+    update_admin_detail_validation_middleware,
+    update_admin_detail_input_data_middleware,
+    update_admin_detail_middleware
 } = require("../middlewares/admin.middleware");
 
 var {
@@ -90,6 +94,14 @@ router.post("/register/sails",
     sails_user_signup_validation_middleware,
     sails_user_signup_sort_input_data_middleware,
     sails_user_signup_insert_document_middleware
+);
+
+/** Edit admin */
+router.post("/edit",
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_SUPER_ADMIN]),
+    update_admin_detail_validation_middleware,
+    update_admin_detail_input_data_middleware,
+    update_admin_detail_middleware
 );
 
 module.exports = router;

@@ -23,12 +23,17 @@ var {
     sails_user_login_validation_middleware,
     sails_user_login_check_credentials_middleware,
 
-    get_sails_user_detail_middleware
+    get_sails_user_detail_middleware,
+
+    update_sails_detail_validation_middleware,
+    update_sails_detail_input_data_middleware,
+    update_sails_detail_middleware
 } = require('../middlewares/sails.middleware');
 
 var {
-    sails_validate_credentials
+    sails_validate_credentials, validate_credentials
 } = require('../middlewares/auth.middleware');
+const { USER_TYPE_MARKETING } = require('../constants/common.constants');
 
 /** Login content writer user */
 router.post("/login",
@@ -59,5 +64,12 @@ router.post("/change_password",
     admin_change_password_validation_middleware,
     admin_sort_change_password_input_data_middleware,
     admin_change_password_middleware);
+
+/** Edit sails user detail */
+router.post("/edit",
+    (req, res, next) => validate_credentials(req, res, next, [USER_TYPE_MARKETING]),
+    update_sails_detail_validation_middleware,
+    update_sails_detail_input_data_middleware,
+    update_sails_detail_middleware);
 
 module.exports = router;

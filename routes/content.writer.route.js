@@ -65,7 +65,7 @@ router.post("/change_password",
     admin_change_password_middleware);
 
 /** Edit Profile */
-router.post("/edit_profile",
+router.post("/edit",
     content_writer_validate_credentials,
     content_writer_edit_profile_validation_middleware,
     content_writer_edit_profile_sort_input_data_middleware,
