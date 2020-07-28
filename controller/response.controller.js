@@ -327,7 +327,7 @@ var mergeObject = function (obj, oldObj) {
  * Get authorization token
  */
 var getAuthoriztionToken = () => {
-    return md5(`${process.env.APP_KEY}${md5(moment(new Date()).tz('America/New_York').format('DD-MM-YYYY'))}`);
+    return md5(`${process.env.APP_KEY}${md5(moment(new Date()).tz(process.env.APP_TIME_ZONE).format(process.env.APP_TIME_FORMAT))}`);
 }
 
 module.exports = {
