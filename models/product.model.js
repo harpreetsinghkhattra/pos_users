@@ -7,7 +7,8 @@ var {
     COLLECTION_SELLER_USER_DETAIL,
     COLLECTION_PRODUCT_SIZE_TYPE,
     COLLECTION_PRODUCT_TYPE,
-    COLLECTION_USER_INFORMATION
+    COLLECTION_USER_INFORMATION,
+    COLLECTION_PRODUCT_DISCOUNT
 } = require("../constants/collection.constants");
 var {
     ACTIVE,
@@ -128,6 +129,17 @@ const ProductType = new Schema({
     name: { type: Schema.Types.String, required: true }
 }, { versionKey: false });
 
+const ProductDiscount = new Schema({
+    product: { type: Schema.Types.ObjectId, ref: COLLECTION_PRODUCT, required: true },
+    discount: [{
+        discount: { type: Schema.Types.Number, min: 0, max: 100, required: true },
+        size: { type: Schema.Types.ObjectId, ref: COLLECTION_PRODUCT_SIZE, required: true }
+    }],
+    status: { type: Schema.Types.String, default: ACTIVE },
+    created_at: { type: Schema.Types.Date, required: true },
+    updated_at: { type: Schema.Types.Date, required: true }
+}, { versionKey: false });
+
 mongoose.model(COLLECTION_PRODUCT_CATEGORY, Category);
 mongoose.model(COLLECTION_PRODUCT_SUB_CATEGORY, SubCategory);
 mongoose.model(COLLECTION_PRODUCT_SIZE, ProductSize);
@@ -135,3 +147,4 @@ mongoose.model(COLLECTION_PRODUCT_FORM, Form);
 mongoose.model(COLLECTION_PRODUCT, Product);
 mongoose.model(COLLECTION_PRODUCT_SIZE_TYPE, Size);
 mongoose.model(COLLECTION_PRODUCT_TYPE, ProductType);
+mongoose.model(COLLECTION_PRODUCT_DISCOUNT, ProductDiscount);

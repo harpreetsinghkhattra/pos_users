@@ -18,4 +18,7 @@ module.exports = {
     COLLECTION_PRODUCT: "product",
     COLLECTION_PRODUCT_SIZE: "product_size",
     COLLECTION_PRODUCT_TYPE: "product_type",
+    COLLECTION_PRODUCT_DISCOUNT: "product_discount",
+
+    COLLECTION_SELECTED_SHOPS: "selected_shops"
 }
