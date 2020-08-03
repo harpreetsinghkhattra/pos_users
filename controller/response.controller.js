@@ -21,6 +21,7 @@ var {
 } = require('../constants/common.constants');
 var md5 = require('md5');
 var moment = require('moment-timezone');
+var path = require("path");
 
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
