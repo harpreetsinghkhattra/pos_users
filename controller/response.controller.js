@@ -22,7 +22,7 @@ var {
 var md5 = require('md5');
 var moment = require('moment-timezone');
 
-require('dotenv').config();
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 var isObjectEmpty = function (obj, cb = undefined) {
     if (!cb && !obj) return true;
